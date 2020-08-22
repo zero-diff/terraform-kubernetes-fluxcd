@@ -44,7 +44,7 @@ module "my-cluster" {
 }
 
 module "fluxcd" {
-  source  = "jacops/fluxcd/kubernetes"
+  source  = "zero-diff/fluxcd/kubernetes"
   version = "0.2.0"
 
   kubeconfig_filename = module.eks.kubeconfig_filename

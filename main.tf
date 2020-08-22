@@ -74,8 +74,8 @@ resource "null_resource" "flux" {
   }
 
   provisioner "local-exec" {
-    command     = "helm delete flux --namespace ${local.flux_namespace}"
-    environment = local.flux_environment
+    command     = "helm delete flux --namespace ${self.triggers}"
+    environment = self.triggers
     when        = destroy
   }
 
@@ -91,14 +91,14 @@ resource "null_resource" "helm_operator" {
   }
 
   provisioner "local-exec" {
-    command     = "helm delete helm-operator --namespace ${local.flux_namespace}"
-    environment = local.helm_operator_environment
+    command     = "helm delete helm-operator --namespace ${self.triggers}"
+    environment = self.triggers
     when        = destroy
   }
 
   provisioner "local-exec" {
     command     = "kubectl delete -f https://raw.githubusercontent.com/fluxcd/helm-operator/master/deploy/flux-helm-release-crd.yaml"
-    environment = local.helm_operator_environment
+    environment = self.triggers
     when        = destroy
   }
 

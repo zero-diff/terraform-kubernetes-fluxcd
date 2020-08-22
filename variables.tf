@@ -5,20 +5,20 @@ variable "kubeconfig_filename" {
 
 variable "namespace" {
   type        = string
-  description = "Name of the namespace where releases will be deployed. If emptu, the module will attempt to create the namespace"
-  default     = ""
+  description = "Name of the namespace where releases will be deployed. If empty, the module will attempt to create the namespace"
+  default     = "fluxcd"
 }
 
 variable "flux_chart_version" {
   type        = string
   description = "Flux chart version"
-  default     = "0.16.0"
+  default     = "1.4.0"
 }
 
 variable "helm_operator_chart_version" {
   type        = string
   description = "Helm operator chart version"
-  default     = "0.4.0"
+  default     = "1.1.0"
 }
 
 variable "flux_values" {
