@@ -6,7 +6,7 @@ variable "kubeconfig_filename" {
 variable "namespace" {
   type        = string
   description = "Name of the namespace where releases will be deployed. If empty, the module will attempt to create the namespace"
-  default     = "fluxcd"
+  default     = ""
 }
 
 variable "flux_chart_version" {

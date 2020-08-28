@@ -2,7 +2,7 @@ terraform {
   required_version = ">= 0.12.2"
 
   required_providers {
-    kubernetes = "~> 1.10"
+    kubernetes = ">= 1.12"
     local      = ">= 1.4"
     tls        = ">= 2.1"
     random     = ">= 2.2"
