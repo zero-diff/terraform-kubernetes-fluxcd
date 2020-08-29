@@ -14,6 +14,9 @@ resource "tls_private_key" "fluxcd" {
   rsa_bits  = 4096
 
   count = var.generate_ssh_key && var.ssh_private_key == "" ? 1 : 0
+  depends_on = [
+    var.module_depends_on
+  ]
 }
 
 resource "kubernetes_namespace" "fluxcd" {
@@ -22,6 +25,9 @@ resource "kubernetes_namespace" "fluxcd" {
   }
 
   count = var.namespace == "" ? 1 : 0
+  depends_on = [
+    var.module_depends_on
+  ]
 }
 
 resource "kubernetes_secret" "flux_ssh" {
@@ -39,6 +45,9 @@ resource "kubernetes_secret" "flux_ssh" {
   }
 
   count = var.generate_ssh_key || var.ssh_private_key != "" ? 1 : 0
+  depends_on = [
+    var.module_depends_on
+  ]
 }
 
 locals {
@@ -80,6 +89,9 @@ resource "null_resource" "flux" {
   }
 
   triggers = local.flux_environment
+  depends_on = [
+    var.module_depends_on
+  ]
 }
 
 resource "null_resource" "helm_operator" {
@@ -103,4 +115,7 @@ resource "null_resource" "helm_operator" {
   }
 
   triggers = local.helm_operator_environment
+  depends_on = [
+    var.module_depends_on
+  ]
 }

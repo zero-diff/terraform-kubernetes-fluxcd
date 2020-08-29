@@ -45,7 +45,7 @@ module "my-cluster" {
 
 module "fluxcd" {
   source  = "zero-diff/fluxcd/kubernetes"
-  version = "0.3.0"
+  version = "0.3.1"
 
   kubeconfig_filename = module.eks.kubeconfig_filename
   generate_ssh_key    = true

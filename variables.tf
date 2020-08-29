@@ -42,3 +42,9 @@ variable "ssh_private_key" {
   description = "SSH private key for flux"
   default     = ""
 }
+
+variable "module_depends_on" {
+  type        = any
+  description = "Module dependencies"
+  default     = []
+}
