@@ -1,13 +1,8 @@
-# Flux and Helm 3 Operator 
-Configures Kubernetes cluster (for example AKS) for GitOps management
-
-**fluxcd/helm-operator for helm3 support is not stable yet!**
-
-> This module waits for terraform helm provider (https://www.terraform.io/docs/providers/helm/index.html) to support version 3, so flux can be configured properly.
+# FluxCD Gitops
+Installs FluxCD and Helm-Operator in your Kubernetes cluster using the Terraform Helm provider.
 
 ## Prerequisites
-
-You need to have `helm` version 3 binary installed locally
+Your cluster should support Helm3. (You do not need Helm3 on your local machine since the Terraform Helm provider handles installation. Permissions to install come from your Kubernetes provider block.
 
 ## Sample usage
 
@@ -45,7 +40,7 @@ module "my-cluster" {
 
 module "fluxcd" {
   source  = "zero-diff/fluxcd/kubernetes"
-  version = "0.3.1"
+  version = "0.4.0"
 
   kubeconfig_filename = module.eks.kubeconfig_filename
   generate_ssh_key    = true

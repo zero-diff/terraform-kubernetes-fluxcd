@@ -1,11 +1,21 @@
 terraform {
-  required_version = ">= 0.12.2"
+  required_version = ">= 0.13"
 
   required_providers {
+    helm       = {
+      source  = "hashicorp/helm"
+      version = "1.2.4"
+    }
     kubernetes = ">= 1.12"
     local      = ">= 1.4"
     tls        = ">= 2.1"
     random     = ">= 2.2"
+  }
+}
+
+provider "helm" {
+  kubernetes {
+    config_path = var.kubeconfig_filename
   }
 }
 
@@ -14,108 +24,58 @@ resource "tls_private_key" "fluxcd" {
   rsa_bits  = 4096
 
   count = var.generate_ssh_key && var.ssh_private_key == "" ? 1 : 0
-  depends_on = [
-    var.module_depends_on
-  ]
 }
 
 resource "kubernetes_namespace" "fluxcd" {
   metadata {
     name = "fluxcd"
   }
-
-  count = var.namespace == "" ? 1 : 0
-  depends_on = [
-    var.module_depends_on
-  ]
 }
 
 resource "kubernetes_secret" "flux_ssh" {
   metadata {
     name      = "flux-ssh"
-    namespace = local.flux_namespace
+    namespace = var.flux_namespace
   }
 
   data = {
-    identity = var.ssh_private_key != "" ? var.ssh_private_key : concat(tls_private_key.fluxcd.*.private_key_pem, [""])[0]
+    identity = var.ssh_private_key != "" ? var.ssh_private_key : concat(tls_private_key.fluxcd.*.private_key_pem, [
+      ""])[0]
   }
 
   lifecycle {
-    ignore_changes = [ metadata[0].annotations ]
+    ignore_changes = [
+      metadata[0].annotations]
   }
 
   count = var.generate_ssh_key || var.ssh_private_key != "" ? 1 : 0
-  depends_on = [
-    var.module_depends_on
-  ]
 }
 
-locals {
-  helm_install_script = "${path.module}/scripts/helm-install.sh"
-  flux_namespace      = coalesce(var.namespace, concat(kubernetes_namespace.fluxcd.*.metadata.0.name, [""])[0])
+resource "helm_release" "flux" {
+  name      = "flux"
+  chart     = "fluxcd/flux"
+  version   = var.flux_chart_version
+  namespace = var.flux_namespace
 
-  flux_environment = {
-    KUBECONFIG         = var.kubeconfig_filename
-    NAMESPACE          = local.flux_namespace
-    CHART_NAME         = "fluxcd/flux"
-    CHART_VERSION      = var.flux_chart_version
-    RELEASE_NAME       = "flux"
-    YAML_VALUES        = yamlencode(local.flux_values)
-    YAML_CUSTOM_VALUES = yamlencode(var.flux_values)
-  }
-  helm_operator_environment = {
-    KUBECONFIG         = var.kubeconfig_filename
-    NAMESPACE          = local.flux_namespace
-    CHART_NAME         = "fluxcd/helm-operator"
-    CHART_VERSION      = var.helm_operator_chart_version
-    RELEASE_NAME       = "helm-operator"
-    YAML_VALUES        = yamlencode(local.helm_operator_values)
-    YAML_CUSTOM_VALUES = yamlencode(var.helm_operator_values)
-  }
-}
-
-resource "null_resource" "flux" {
-
-  provisioner "local-exec" {
-    on_failure  = fail
-    command     = local.helm_install_script
-    environment = local.flux_environment
-  }
-
-  provisioner "local-exec" {
-    command     = "helm delete flux --namespace ${self.triggers}"
-    environment = self.triggers
-    when        = destroy
-  }
-
-  triggers = local.flux_environment
-  depends_on = [
-    var.module_depends_on
+  values = [
+    yamlencode(local.flux_values),
+    yamlencode(var.flux_values)
   ]
-}
 
-resource "null_resource" "helm_operator" {
-
-  provisioner "local-exec" {
-    on_failure  = fail
-    command     = local.helm_install_script
-    environment = local.helm_operator_environment
-  }
-
-  provisioner "local-exec" {
-    command     = "helm delete helm-operator --namespace ${self.triggers}"
-    environment = self.triggers
-    when        = destroy
-  }
-
-  provisioner "local-exec" {
-    command     = "kubectl delete -f https://raw.githubusercontent.com/fluxcd/helm-operator/master/deploy/flux-helm-release-crd.yaml"
-    environment = self.triggers
-    when        = destroy
-  }
-
-  triggers = local.helm_operator_environment
   depends_on = [
-    var.module_depends_on
+    var.module_depends_on]
+}
+resource "helm_release" "helm_operator" {
+  name      = "helm-operator"
+  chart     = "fluxcd/helm-operator"
+  version   = var.helm_operator_chart_version
+  namespace = var.flux_namespace
+
+  values = [
+    yamlencode(local.helm_operator_values),
+    yamlencode(var.helm_operator_values)
   ]
+
+  depends_on = [
+    var.module_depends_on]
 }
