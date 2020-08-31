@@ -2,20 +2,11 @@ terraform {
   required_version = ">= 0.13"
 
   required_providers {
-    helm       = {
-      source  = "hashicorp/helm"
-      version = "1.2.4"
-    }
-    kubernetes = ">= 1.12"
-    local      = ">= 1.4"
-    tls        = ">= 2.1"
-    random     = ">= 2.2"
-  }
-}
-
-provider "helm" {
-  kubernetes {
-    config_path = var.kubeconfig_filename
+    helm             = ">= 1.2.4"
+    kubernetes       = ">= 1.12"
+    local            = ">= 1.4"
+    tls              = ">= 2.1"
+    random           = ">= 2.2"
   }
 }
 
@@ -30,6 +21,10 @@ resource "kubernetes_namespace" "fluxcd" {
   metadata {
     name = "fluxcd"
   }
+
+  depends_on = [
+    var.module_depends_on
+  ]
 }
 
 resource "kubernetes_secret" "flux_ssh" {
@@ -49,6 +44,10 @@ resource "kubernetes_secret" "flux_ssh" {
   }
 
   count = var.generate_ssh_key || var.ssh_private_key != "" ? 1 : 0
+
+  depends_on = [
+    var.module_depends_on
+  ]
 }
 
 resource "helm_release" "flux" {
@@ -63,8 +62,10 @@ resource "helm_release" "flux" {
   ]
 
   depends_on = [
-    var.module_depends_on]
+    var.module_depends_on
+  ]
 }
+
 resource "helm_release" "helm_operator" {
   name      = "helm-operator"
   chart     = "fluxcd/helm-operator"
@@ -77,5 +78,6 @@ resource "helm_release" "helm_operator" {
   ]
 
   depends_on = [
-    var.module_depends_on]
+    var.module_depends_on
+  ]
 }

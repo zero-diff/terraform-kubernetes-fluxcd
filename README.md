@@ -23,6 +23,15 @@ provider "kubernetes" {
   version                = "~> 1.9"
 }
 
+provider "helm" {
+  kubernetes {
+    load_config_file = false
+    cluster_ca_certificate = module.gke_auth.cluster_ca_certificate
+    host                   = module.gke_auth.host
+    token                  = module.gke_auth.token
+  }
+}
+
 module "my-cluster" {
   source          = "terraform-aws-modules/eks/aws"
   cluster_name    = "my-cluster"
@@ -40,9 +49,13 @@ module "my-cluster" {
 
 module "fluxcd" {
   source  = "zero-diff/fluxcd/kubernetes"
-  version = "0.4.0"
+  version = "0.4.1"
 
-  kubeconfig_filename = module.eks.kubeconfig_filename
+  providers = {
+    helm = helm
+    kubernetes = kubernetes
+  }
+
   generate_ssh_key    = true
   flux_values         = {
     git = {

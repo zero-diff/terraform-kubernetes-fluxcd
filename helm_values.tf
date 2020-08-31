@@ -1,11 +1,11 @@
 locals {
   flux_values = {
     git = {
-      secretName: concat(kubernetes_secret.flux_ssh.*.metadata.0.name, [""])[0]
+      secretName: "flux-ssh"
     }
   }
   helm_operator_values = {
-    createCRD: true
+    createCRD: false
     git: {
       ssh: {
         secretName: local.flux_values.git.secretName
