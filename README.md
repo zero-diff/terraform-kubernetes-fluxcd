@@ -49,7 +49,7 @@ module "my-cluster" {
 
 module "fluxcd" {
   source  = "zero-diff/fluxcd/kubernetes"
-  version = "0.4.1"
+  version = "0.4.2"
 
   providers = {
     helm = helm
