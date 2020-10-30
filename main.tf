@@ -1,12 +1,12 @@
 terraform {
-  required_version = ">= 0.13"
+  required_version = "~> 0.13"
 
   required_providers {
-    helm             = ">= 1.2.4"
-    kubernetes       = ">= 1.12"
-    local            = ">= 1.4"
-    tls              = ">= 2.1"
-    random           = ">= 2.2"
+    helm             = "~> 1.3.2"
+    kubernetes       = "~> 1.13.3"
+    local            = "~> 2.0.0"
+    tls              = "~> 3.0.0"
+    random           = "~> 3.0.0"
   }
 }
 
@@ -19,7 +19,7 @@ resource "tls_private_key" "fluxcd" {
 
 resource "kubernetes_namespace" "fluxcd" {
   metadata {
-    name = "fluxcd"
+    name = var.flux_namespace
   }
 
   depends_on = [
@@ -30,7 +30,7 @@ resource "kubernetes_namespace" "fluxcd" {
 resource "kubernetes_secret" "flux_ssh" {
   metadata {
     name      = "flux-ssh"
-    namespace = var.flux_namespace
+    namespace = kubernetes_namespace.fluxcd.id
   }
 
   data = {
@@ -54,7 +54,7 @@ resource "helm_release" "flux" {
   name      = "flux"
   chart     = "fluxcd/flux"
   version   = var.flux_chart_version
-  namespace = var.flux_namespace
+  namespace = kubernetes_namespace.fluxcd.id
 
   values = [
     yamlencode(local.flux_values),
@@ -70,7 +70,7 @@ resource "helm_release" "helm_operator" {
   name      = "helm-operator"
   chart     = "fluxcd/helm-operator"
   version   = var.helm_operator_chart_version
-  namespace = var.flux_namespace
+  namespace = kubernetes_namespace.fluxcd.id
 
   values = [
     yamlencode(local.helm_operator_values),
