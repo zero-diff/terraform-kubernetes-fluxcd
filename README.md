@@ -35,7 +35,7 @@ provider "helm" {
 module "my-cluster" {
   source          = "terraform-aws-modules/eks/aws"
   cluster_name    = "my-cluster"
-  cluster_version = "1.14"
+  cluster_version = "1.18"
   subnets         = ["subnet-abcde012", "subnet-bcde012a", "subnet-fghi345a"]
   vpc_id          = "vpc-1234556abcdef"
 
@@ -49,7 +49,7 @@ module "my-cluster" {
 
 module "fluxcd" {
   source  = "zero-diff/fluxcd/kubernetes"
-  version = "0.4.3"
+  version = "0.4.4"
 
   providers = {
     helm = helm
