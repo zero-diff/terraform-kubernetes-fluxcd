@@ -7,13 +7,13 @@ variable "flux_namespace" {
 variable "flux_chart_version" {
   type        = string
   description = "Flux chart version"
-  default     = "1.5.0"
+  default     = "1.10.0"
 }
 
 variable "helm_operator_chart_version" {
   type        = string
   description = "Helm operator chart version"
-  default     = "1.2.0"
+  default     = "1.4.0"
 }
 
 variable "flux_values" {
